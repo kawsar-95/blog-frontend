@@ -1,6 +1,6 @@
 "use client";
 import { initialsOf, avatarUrl } from "@/utils/format";
-import { API_URL } from "@/utils/api";
+import { API_URL } from "@/lib/http/config";
 
 export default function Avatar({ src, name, size = 36, className = "" }) {
   const url = avatarUrl(src, API_URL);

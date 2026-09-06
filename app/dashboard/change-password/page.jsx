@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { userService } from "@/services/user.service";
-import { validatePasswordChange } from "@/utils/validators";
+import { userService } from "@/services";
+import { PasswordChangeValidator } from "@/validators/PasswordChangeValidator";
 import { useToast } from "@/contexts/ToastContext";
 import { Spinner } from "@/components/Loader";
+import Alert from "@/components/Alert";
 
 export default function ChangePasswordPage() {
   const toast = useToast();
@@ -22,9 +23,9 @@ export default function ChangePasswordPage() {
   async function handle(e) {
     e.preventDefault();
     setServerError("");
-    const errs = validatePasswordChange(form);
+    const { errors: errs, isValid } = PasswordChangeValidator.validate(form);
     setErrors(errs);
-    if (Object.keys(errs).length) return;
+    if (!isValid) return;
     setSubmitting(true);
     try {
       await userService.changePassword(form.password);
@@ -48,11 +49,7 @@ export default function ChangePasswordPage() {
       </div>
 
       <form onSubmit={handle} className="card space-y-4">
-        {serverError && (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            {serverError}
-          </div>
-        )}
+        {serverError && <Alert type="error">{serverError}</Alert>}
         <div>
           <label className="label">New Password</label>
           <input

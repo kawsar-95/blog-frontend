@@ -1,6 +1,7 @@
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ToastProvider } from "@/contexts/ToastContext";
+import ToastContainer from "@/components/ToastContainer";
 
 export const metadata = {
   title: "BlogSpace — A Modern Blog Platform",
@@ -20,6 +21,7 @@ export default function RootLayout({ children }) {
       <body>
         <ToastProvider>
           <AuthProvider>{children}</AuthProvider>
+          <ToastContainer />
         </ToastProvider>
       </body>
     </html>

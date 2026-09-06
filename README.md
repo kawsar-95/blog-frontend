@@ -117,7 +117,16 @@ blog-frontend/
 
 ### 1. Prerequisites
 - Node.js 18.17 or newer (Node 20+ recommended)
-- The Blog REST API running on `http://localhost:5000`
+- The Blog REST API running on `http://localhost:3000`
+- The frontend runs on `http://localhost:3001` (configured in `package.json`) so it doesn't clash with the backend's port
+
+Clone and start the backend before running the frontend:
+```bash
+git clone https://github.com/kawsar-95/API--Testing.git
+cd API--Testing
+npm install
+npm start      # or: npm run dev (with auto-reload)
+```
 
 ### 2. Installation
 Install dependencies:
@@ -128,14 +137,14 @@ npm install
 ### 3. Configure environment
 Copy `.env.example` to `.env.local` and set the API base URL:
 ```
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
 ```
 
 ### 4. Run the development server
 ```bash
 npm run dev
 ```
-Visit [http://localhost:3000](http://localhost:3000).
+Visit [http://localhost:3001](http://localhost:3001).
 
 ### 5. Production build
 ```bash
@@ -257,7 +266,7 @@ npm run lint    # run eslint
 > Screenshots were captured with the frontend running against an offline
 > environment (no backend reachable), which is why blog/user lists show the
 > "Failed to fetch" empty state. With your Blog REST API running on
-> `http://localhost:5000`, real data will populate the same UI.
+> `http://localhost:3000`, real data will populate the same UI.
 
 ---
 

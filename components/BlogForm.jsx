@@ -1,20 +1,9 @@
 "use client";
 import { useState } from "react";
-import { validateBlog } from "@/utils/validators";
+import { BlogValidator } from "@/validators/BlogValidator";
+import { CATEGORIES } from "@/constants/categories";
 import { Spinner } from "./Loader";
-
-const CATEGORIES = [
-  "All",
-  "Testing",
-  "Automation",
-  "Programming",
-  "DevOps",
-  "AI",
-  "Web Development",
-  "Mobile",
-  "Cloud",
-  "Security",
-];
+import Alert from "./Alert";
 
 export default function BlogForm({ initial, onSubmit, submitLabel = "Publish Blog" }) {
   const [form, setForm] = useState({
@@ -34,9 +23,9 @@ export default function BlogForm({ initial, onSubmit, submitLabel = "Publish Blo
   async function handle(e) {
     e.preventDefault();
     setServerError("");
-    const errs = validateBlog(form);
+    const { errors: errs, isValid } = BlogValidator.validate(form);
     setErrors(errs);
-    if (Object.keys(errs).length) return;
+    if (!isValid) return;
     setSubmitting(true);
     try {
       await onSubmit(form);
@@ -49,11 +38,7 @@ export default function BlogForm({ initial, onSubmit, submitLabel = "Publish Blo
 
   return (
     <form onSubmit={handle} className="space-y-5">
-      {serverError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          {serverError}
-        </div>
-      )}
+      {serverError && <Alert type="error">{serverError}</Alert>}
 
       <div>
         <label className="label">Blog Title</label>

@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { authService } from "@/services/auth.service";
-import { validateForgot } from "@/utils/validators";
+import { authService } from "@/services";
+import { ForgotPasswordValidator } from "@/validators/ForgotPasswordValidator";
 import { useToast } from "@/contexts/ToastContext";
 import { Spinner } from "@/components/Loader";
+import Alert from "@/components/Alert";
 
 export default function ForgotPasswordPage() {
   const toast = useToast();
@@ -18,9 +19,9 @@ export default function ForgotPasswordPage() {
   async function handle(e) {
     e.preventDefault();
     setServerError("");
-    const errs = validateForgot({ email });
+    const { errors: errs, isValid } = ForgotPasswordValidator.validate({ email });
     setErrors(errs);
-    if (Object.keys(errs).length) return;
+    if (!isValid) return;
     setSubmitting(true);
     try {
       await authService.forgotPassword({ email: email.trim().toLowerCase() });
@@ -48,16 +49,8 @@ export default function ForgotPasswordPage() {
         </div>
 
         <form onSubmit={handle} className="card space-y-4">
-          {done && (
-            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-              Password reset link sent. Please check your inbox.
-            </div>
-          )}
-          {serverError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-              {serverError}
-            </div>
-          )}
+          {done && <Alert type="success">Password reset link sent. Please check your inbox.</Alert>}
+          {serverError && <Alert type="error">{serverError}</Alert>}
           <div>
             <label className="label">Email</label>
             <input

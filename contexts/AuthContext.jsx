@@ -9,9 +9,7 @@ import {
   useCallback,
   useMemo,
 } from "react";
-import { getToken, setToken as saveToken } from "@/utils/api";
-import { decodeJwt, isExpired, roleFromToken } from "@/utils/auth";
-import { userService } from "@/services/user.service";
+import { authService, userService } from "@/services";
 
 const AuthContext = createContext(null);
 
@@ -23,41 +21,27 @@ export function AuthProvider({ children }) {
   // Bootstrap auth state from localStorage on first mount.
   const bootstrap = useCallback(async () => {
     setLoading(true);
-    const token = getToken();
-    if (!token || isExpired(token)) {
-      saveToken(null);
+    const session = authService.getSession();
+    if (!session.valid) {
       setUser(null);
       setProfileImage(null);
       setLoading(false);
       return;
     }
-    const payload = decodeJwt(token);
-    if (payload) {
-      setUser({
-        id: payload.id || payload._id || payload.sub,
-        email: payload.email,
-        firstName: payload.firstName,
-        lastName: payload.lastName,
-        role: roleFromToken(token),
-      });
-    }
+    setUser(session.user);
     try {
-      const u = await userService.profile();
-      if (u && (u.firstName || u.email)) {
-        setUser((prev) => ({
-          ...prev,
-          id: u._id || u.id || prev?.id,
-          firstName: u.firstName ?? prev?.firstName,
-          lastName: u.lastName ?? prev?.lastName,
-          email: u.email ?? prev?.email,
-          role: u.role ?? prev?.role,
-        }));
-        setProfileImage(u.image || u.profileImage || null);
+      const fresh = await userService.profile();
+      if (fresh && (fresh.firstName || fresh.email)) {
+        setUser((prev) => {
+          const base = prev || session.user;
+          return base ? base.merge(fresh) : fresh;
+        });
+        setProfileImage(fresh.profileImage || null);
       }
     } catch (e) {
       // 401/403 means the token is no longer valid; drop it.
       if (e?.status === 401 || e?.status === 403) {
-        saveToken(null);
+        authService.logout();
         setUser(null);
         setProfileImage(null);
       }
@@ -75,24 +59,17 @@ export function AuthProvider({ children }) {
   }, [bootstrap]);
 
   const logout = useCallback(() => {
-    saveToken(null);
+    authService.logout();
     setUser(null);
     setProfileImage(null);
   }, []);
 
   const refreshProfile = useCallback(async () => {
     try {
-      const u = await userService.profile();
-      if (u && (u.firstName || u.email)) {
-        setUser((prev) => ({
-          ...prev,
-          id: u._id || u.id || prev?.id,
-          firstName: u.firstName ?? prev?.firstName,
-          lastName: u.lastName ?? prev?.lastName,
-          email: u.email ?? prev?.email,
-          role: u.role ?? prev?.role,
-        }));
-        setProfileImage(u.image || u.profileImage || null);
+      const fresh = await userService.profile();
+      if (fresh && (fresh.firstName || fresh.email)) {
+        setUser((prev) => (prev ? prev.merge(fresh) : fresh));
+        setProfileImage(fresh.profileImage || null);
       }
     } catch (e) {
       // ignore — surfaced in the caller
@@ -105,7 +82,7 @@ export function AuthProvider({ children }) {
       profileImage,
       loading,
       isAuthenticated: !!user,
-      isAdmin: (user?.role || "").toString().toLowerCase() === "admin",
+      isAdmin: user?.isAdmin ?? false,
       login,
       logout,
       refreshProfile,

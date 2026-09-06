@@ -17,7 +17,7 @@ export default function ProfileMenu() {
     return () => window.removeEventListener("mousedown", onClick);
   }, []);
 
-  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "My account";
+  const fullName = user?.fullName || "My account";
 
   function handleLogout() {
     logout();

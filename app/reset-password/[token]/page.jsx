@@ -3,10 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { authService } from "@/services/auth.service";
-import { validateReset } from "@/utils/validators";
+import { authService } from "@/services";
+import { ResetPasswordValidator } from "@/validators/ResetPasswordValidator";
 import { useToast } from "@/contexts/ToastContext";
 import { Spinner } from "@/components/Loader";
+import Alert from "@/components/Alert";
 
 export default function ResetPasswordPage() {
   const { token } = useParams();
@@ -25,9 +26,9 @@ export default function ResetPasswordPage() {
   async function handle(e) {
     e.preventDefault();
     setServerError("");
-    const errs = validateReset(form);
+    const { errors: errs, isValid } = ResetPasswordValidator.validate(form);
     setErrors(errs);
-    if (Object.keys(errs).length) return;
+    if (!isValid) return;
     setSubmitting(true);
     try {
       await authService.resetPassword(token, { password: form.password });
@@ -53,11 +54,7 @@ export default function ResetPasswordPage() {
         </div>
 
         <form onSubmit={handle} className="card space-y-4">
-          {serverError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-              {serverError}
-            </div>
-          )}
+          {serverError && <Alert type="error">{serverError}</Alert>}
           <div>
             <label className="label">New Password</label>
             <input

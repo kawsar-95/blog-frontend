@@ -5,10 +5,7 @@ import { formatDate, truncate } from "@/utils/format";
 
 export default function BlogCard({ blog }) {
   if (!blog) return null;
-  const author =
-    [blog.userFirstName, blog.userLastName].filter(Boolean).join(" ") ||
-    blog.author ||
-    "Unknown";
+  const author = blog.authorName;
   return (
     <article className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="flex items-center justify-between">

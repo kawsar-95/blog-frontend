@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { blogService } from "@/services/blog.service";
+import { blogService } from "@/services";
 import { useAuth } from "@/contexts/AuthContext";
 import Avatar from "@/components/Avatar";
 import { SkeletonCard } from "@/components/Loader";
@@ -24,7 +24,6 @@ export default function BlogDetailsPage() {
     let cancelled = false;
     async function fetchBlog() {
       try {
-        // blogService.get already returns the adapted blog object directly.
         const b = await blogService.get(id);
         if (!cancelled) setBlog(b);
       } catch (e) {
@@ -78,18 +77,12 @@ export default function BlogDetailsPage() {
             </h1>
             <div className="mt-4 flex items-center gap-3 border-b border-slate-100 pb-5">
               <Avatar
-                src={blog.userImage || blog.authorImage}
-                name={
-                  [blog.userFirstName, blog.userLastName].filter(Boolean).join(" ") ||
-                  blog.author ||
-                  "Author"
-                }
+                src={blog.userImage}
+                name={blog.authorName}
                 size={42}
               />
               <div>
-                <p className="font-semibold text-slate-800">
-                  {[blog.userFirstName, blog.userLastName].filter(Boolean).join(" ") || "Unknown"}
-                </p>
+                <p className="font-semibold text-slate-800">{blog.authorName}</p>
                 <p className="text-xs text-slate-500">{formatDate(blog.createdAt)}</p>
               </div>
             </div>

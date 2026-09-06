@@ -3,11 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authService } from "@/services/auth.service";
+import { authService } from "@/services";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
-import { validateLogin } from "@/utils/validators";
+import { LoginValidator } from "@/validators/LoginValidator";
 import { Spinner } from "@/components/Loader";
+import Alert from "@/components/Alert";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,9 +27,9 @@ export default function LoginPage() {
   async function handle(e) {
     e.preventDefault();
     setServerError("");
-    const errs = validateLogin(form);
+    const { errors: errs, isValid } = LoginValidator.validate(form);
     setErrors(errs);
-    if (Object.keys(errs).length) return;
+    if (!isValid) return;
     setSubmitting(true);
     try {
       await authService.login({
@@ -58,11 +59,7 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handle} className="card space-y-4">
-          {serverError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-              {serverError}
-            </div>
-          )}
+          {serverError && <Alert type="error">{serverError}</Alert>}
           <div>
             <label className="label">Email</label>
             <input

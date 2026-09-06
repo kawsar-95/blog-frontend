@@ -1,52 +1,31 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { blogService } from "@/services/blog.service";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
+import { useBlogs } from "@/hooks/useBlogs";
 import { formatDate } from "@/utils/format";
 import { SkeletonCard } from "@/components/Loader";
 import EmptyState from "@/components/EmptyState";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import Alert from "@/components/Alert";
+import { Th, Td } from "@/components/Table";
 
 export default function MyBlogsPage() {
-  const { user, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
   const toast = useToast();
   const router = useRouter();
-  const [blogs, setBlogs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { blogs, loading, error, remove } = useBlogs({ scope: "mine" });
   const [deleteTarget, setDeleteTarget] = useState(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      let list = await blogService.list();
-      if (!isAdmin && user?.id) {
-        list = list.filter(
-          (b) => (b.userId || b.authorId || b.user?._id) === user.id
-        );
-      }
-      setBlogs(list);
-    } catch (e) {
-      setError(e?.message || "Could not load blogs");
-    } finally {
-      setLoading(false);
-    }
-  }, [isAdmin, user?.id]);
-
-  useEffect(() => { load(); }, [load]);
 
   async function confirmDelete() {
     if (!deleteTarget) return;
     try {
-      await blogService.remove(deleteTarget._id || deleteTarget.id);
+      await remove(deleteTarget.id);
       toast.success("Blog deleted");
       setDeleteTarget(null);
-      load();
     } catch (e) {
       toast.error(e?.message || "Could not delete blog");
     }
@@ -70,11 +49,7 @@ export default function MyBlogsPage() {
         </Link>
       </header>
 
-      {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          {error}
-        </div>
-      )}
+      {error && <Alert type="error">{error}</Alert>}
 
       {loading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -107,10 +82,6 @@ export default function MyBlogsPage() {
               <tbody className="divide-y divide-slate-100">
                 {blogs.map((b) => {
                   const id = b._id || b.id;
-                  const author =
-                    [b.userFirstName, b.userLastName].filter(Boolean).join(" ") ||
-                    b.author ||
-                    "Unknown";
                   return (
                     <tr key={id} className="hover:bg-slate-50">
                       <Td>
@@ -119,7 +90,7 @@ export default function MyBlogsPage() {
                         </Link>
                       </Td>
                       <Td><span className="badge">{b.category || "General"}</span></Td>
-                      <Td>{author}</Td>
+                      <Td>{b.authorName}</Td>
                       <Td className="text-slate-500">{formatDate(b.createdAt)}</Td>
                       <Td className="text-right">
                         <div className="inline-flex gap-2">
@@ -157,15 +128,4 @@ export default function MyBlogsPage() {
       />
     </div>
   );
-}
-
-function Th({ children, className = "" }) {
-  return (
-    <th className={"px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 " + className}>
-      {children}
-    </th>
-  );
-}
-function Td({ children, className = "" }) {
-  return <td className={"px-4 py-3 align-middle " + className}>{children}</td>;
 }

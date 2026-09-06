@@ -1,46 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { blogService } from "@/services/blog.service";
-import { userService } from "@/services/user.service";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDashboardStats } from "@/hooks/useDashboardStats";
 import Avatar from "@/components/Avatar";
 import Loader from "@/components/Loader";
 import BlogCard from "@/components/BlogCard";
 
 export default function DashboardHome() {
   const { user, profileImage } = useAuth();
-  const [stats, setStats] = useState({ total: 0, mine: 0 });
-  const [recent, setRecent] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { stats, recent, loading } = useDashboardStats();
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      try {
-        const list = await blogService.list();
-        if (!cancelled) {
-          setRecent(list.slice(0, 3));
-          setStats((s) => ({ ...s, total: list.length }));
-        }
-        if (user?.id) {
-          const mine = list.filter(
-            (b) => (b.userId || b.authorId || b.user?._id) === user.id
-          );
-          if (!cancelled) setStats((s) => ({ ...s, mine: mine.length }));
-        }
-      } catch (e) {
-        // ignore — empty state handles UX
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    load();
-    return () => { cancelled = true; };
-  }, [user?.id]);
-
-  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email || "there";
+  const fullName = user?.fullName || "there";
 
   return (
     <div className="space-y-8">

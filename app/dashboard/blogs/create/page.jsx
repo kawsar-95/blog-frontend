@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { blogService } from "@/services/blog.service";
+import { blogService } from "@/services";
 import BlogForm from "@/components/BlogForm";
 import { useToast } from "@/contexts/ToastContext";
 
@@ -11,10 +11,9 @@ export default function CreateBlogPage() {
   const toast = useToast();
 
   async function handleSubmit(form) {
-    const data = await blogService.create(form);
+    const blog = await blogService.create(form);
     toast.success("Blog published!");
-    const id = data?.blog?._id || data?.data?.blog?._id || data?.blog?.id;
-    router.push(id ? `/blogs/${id}` : "/dashboard/blogs");
+    router.push(blog?.id ? `/blogs/${blog.id}` : "/dashboard/blogs");
   }
 
   return (

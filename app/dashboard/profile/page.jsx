@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
-import { userService } from "@/services/user.service";
-import { validateProfile, validatePasswordChange, validateImage } from "@/utils/validators";
+import { userService } from "@/services";
+import { ProfileValidator } from "@/validators/ProfileValidator";
+import { PasswordChangeValidator } from "@/validators/PasswordChangeValidator";
+import { ImageValidator } from "@/validators/ImageValidator";
 import Avatar from "@/components/Avatar";
 import { Spinner } from "@/components/Loader";
 
@@ -41,9 +43,9 @@ export default function ProfilePage() {
 
   async function saveProfile(e) {
     e.preventDefault();
-    const errs = validateProfile(form);
+    const { errors: errs, isValid } = ProfileValidator.validate(form);
     setErrors(errs);
-    if (Object.keys(errs).length) return;
+    if (!isValid) return;
     setSaving(true);
     try {
       await userService.updateProfile({
@@ -60,9 +62,9 @@ export default function ProfilePage() {
   }
 
   function pickFile(f) {
-    const err = validateImage(f);
-    if (err) {
-      toast.error(err);
+    const { errors: errs, isValid } = ImageValidator.validate(f);
+    if (!isValid) {
+      toast.error(errs.image);
       return;
     }
     setFile(f);
@@ -93,9 +95,9 @@ export default function ProfilePage() {
 
   async function changePassword(e) {
     e.preventDefault();
-    const errs = validatePasswordChange(pw);
+    const { errors: errs, isValid } = PasswordChangeValidator.validate(pw);
     setPwErrors(errs);
-    if (Object.keys(errs).length) return;
+    if (!isValid) return;
     setPwSaving(true);
     try {
       await userService.changePassword(pw.password);
@@ -108,6 +110,8 @@ export default function ProfilePage() {
     }
   }
 
+  const fullName = user?.fullName || "";
+
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-bold text-slate-900">Profile</h1>
@@ -116,7 +120,7 @@ export default function ProfilePage() {
         <h2 className="text-lg font-semibold text-slate-800">Profile Image</h2>
         <p className="text-sm text-slate-500">JPG/PNG up to 2 MB.</p>
         <div className="mt-5 flex items-center gap-5">
-          <Avatar src={preview || profileImage} name={[user?.firstName, user?.lastName].join(" ")} size={88} />
+          <Avatar src={preview || profileImage} name={fullName} size={88} />
           <div className="flex-1">
             <input
               ref={fileRef}

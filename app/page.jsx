@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { blogService } from "@/services/blog.service";
+import { blogService } from "@/services";
+import { CATEGORIES } from "@/constants/categories";
 import BlogCard from "@/components/BlogCard";
 import SearchBar from "@/components/SearchBar";
 import CategoryFilter from "@/components/CategoryFilter";
@@ -13,19 +14,7 @@ import { SkeletonCard } from "@/components/Loader";
 import PublicNavbar from "@/components/PublicNavbar";
 import ProfileMenu from "@/components/ProfileMenu";
 import Footer from "@/components/Footer";
-
-const CATEGORIES = [
-  "All",
-  "Testing",
-  "Automation",
-  "Programming",
-  "DevOps",
-  "AI",
-  "Web Development",
-  "Mobile",
-  "Cloud",
-  "Security",
-];
+import Alert from "@/components/Alert";
 
 export default function HomePage() {
   const [blogs, setBlogs] = useState([]);
@@ -116,8 +105,8 @@ export default function HomePage() {
         </section>
 
         {error && (
-          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            {error}
+          <div className="mb-6">
+            <Alert type="error">{error}</Alert>
           </div>
         )}
 

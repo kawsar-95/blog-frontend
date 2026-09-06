@@ -1,45 +1,29 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { userService } from "@/services/user.service";
+import { useState } from "react";
 import { useToast } from "@/contexts/ToastContext";
+import { useUsers } from "@/hooks/useUsers";
 import { formatDate } from "@/utils/format";
 import { SkeletonCard } from "@/components/Loader";
 import EmptyState from "@/components/EmptyState";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import Avatar from "@/components/Avatar";
+import Alert from "@/components/Alert";
 import Protected from "@/components/Protected";
+import { Th, Td } from "@/components/Table";
 
 function AdminUsersInner() {
   const toast = useToast();
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { users, loading, error, setStatus } = useUsers();
   const [target, setTarget] = useState(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const list = await userService.list();
-      setUsers(Array.isArray(list) ? list : []);
-    } catch (e) {
-      setError(e?.message || "Could not load users");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
 
   async function toggleStatus() {
     if (!target) return;
     const next = !target.isActive;
     try {
-      await userService.setStatus(target._id || target.id, next);
+      await setStatus(target.id, next);
       toast.success(`User ${next ? "activated" : "deactivated"}`);
       setTarget(null);
-      load();
     } catch (e) {
       toast.error(e?.message || "Could not update status");
     }
@@ -52,11 +36,7 @@ function AdminUsersInner() {
         <p className="text-sm text-slate-600">Manage every account on the platform.</p>
       </header>
 
-      {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          {error}
-        </div>
-      )}
+      {error && <Alert type="error">{error}</Alert>}
 
       {loading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -86,11 +66,9 @@ function AdminUsersInner() {
                     <tr key={id} className="hover:bg-slate-50">
                       <Td>
                         <div className="flex items-center gap-3">
-                          <Avatar src={u.image || u.profileImage} name={[u.firstName, u.lastName].join(" ")} size={36} />
+                          <Avatar src={u.profileImage} name={u.fullName} size={36} />
                           <div>
-                            <p className="font-medium text-slate-800">
-                              {[u.firstName, u.lastName].filter(Boolean).join(" ") || "—"}
-                            </p>
+                            <p className="font-medium text-slate-800">{u.fullName || "—"}</p>
                             <p className="text-xs text-slate-500">{formatDate(u.createdAt)}</p>
                           </div>
                         </div>
@@ -137,8 +115,8 @@ function AdminUsersInner() {
         title={target?.isActive ? "Deactivate user?" : "Activate user?"}
         message={
           target?.isActive
-            ? `${[target?.firstName, target?.lastName].filter(Boolean).join(" ") || "This user"} will not be able to log in.`
-            : `${[target?.firstName, target?.lastName].filter(Boolean).join(" ") || "This user"} will regain access.`
+            ? `${target?.fullName || "This user"} will not be able to log in.`
+            : `${target?.fullName || "This user"} will regain access.`
         }
         confirmText={target?.isActive ? "Deactivate" : "Activate"}
         danger={!!target?.isActive}
@@ -155,15 +133,4 @@ export default function AdminUsersPage() {
       <AdminUsersInner />
     </Protected>
   );
-}
-
-function Th({ children, className = "" }) {
-  return (
-    <th className={"px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 " + className}>
-      {children}
-    </th>
-  );
-}
-function Td({ children, className = "" }) {
-  return <td className={"px-4 py-3 align-middle " + className}>{children}</td>;
 }

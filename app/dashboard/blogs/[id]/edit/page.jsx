@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { blogService } from "@/services/blog.service";
+import { blogService } from "@/services";
 import BlogForm from "@/components/BlogForm";
 import Loader from "@/components/Loader";
 import { useToast } from "@/contexts/ToastContext";
+import Alert from "@/components/Alert";
 
 export default function EditBlogPage() {
   const { id } = useParams();
@@ -20,7 +21,6 @@ export default function EditBlogPage() {
     let cancelled = false;
     async function load() {
       try {
-        // blogService.get returns the adapted blog directly.
         const b = await blogService.get(id);
         if (!cancelled) setInitial(b);
       } catch (e) {
@@ -52,9 +52,7 @@ export default function EditBlogPage() {
         {loading ? (
           <Loader label="Loading blog..." />
         ) : error || !initial ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            {error || "Blog not found."}
-          </div>
+          <Alert type="error">{error || "Blog not found."}</Alert>
         ) : (
           <BlogForm
             initial={{

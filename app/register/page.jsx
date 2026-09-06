@@ -3,16 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authService } from "@/services/auth.service";
-import { useAuth } from "@/contexts/AuthContext";
+import { authService } from "@/services";
 import { useToast } from "@/contexts/ToastContext";
-import { validateRegister } from "@/utils/validators";
+import { RegisterValidator } from "@/validators/RegisterValidator";
 import { Spinner } from "@/components/Loader";
+import Alert from "@/components/Alert";
 
 export default function RegisterPage() {
   const router = useRouter();
   const toast = useToast();
-  const { login } = useAuth();
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -32,9 +31,9 @@ export default function RegisterPage() {
   async function handle(e) {
     e.preventDefault();
     setServerError("");
-    const errs = validateRegister(form);
+    const { errors: errs, isValid } = RegisterValidator.validate(form);
     setErrors(errs);
-    if (Object.keys(errs).length) return;
+    if (!isValid) return;
     setSubmitting(true);
     try {
       await authService.register({
@@ -65,11 +64,7 @@ export default function RegisterPage() {
         </div>
 
         <form onSubmit={handle} noValidate className="card space-y-4">
-          {serverError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-              {serverError}
-            </div>
-          )}
+          {serverError && <Alert type="error">{serverError}</Alert>}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="label">First Name</label>
