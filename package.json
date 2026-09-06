@@ -8,7 +8,14 @@
     "start": "next start -p 3001",
     "lint": "next lint",
     "audit": "node e2e/audit.mjs",
-    "spec-audit": "node e2e/spec-audit.mjs"
+    "spec-audit": "node e2e/spec-audit.mjs",
+    "backend:dev": "npm --prefix \"${BACKEND_DIR:-/home/nuruddin-kawsar/Documents/r2sdet/blog-api}\" run dev",
+    "backend:start": "npm --prefix \"${BACKEND_DIR:-/home/nuruddin-kawsar/Documents/r2sdet/blog-api}\" start",
+    "kill:frontend": "fuser -k 3001/tcp 2>/dev/null || true",
+    "kill:backend": "fuser -k 3000/tcp 2>/dev/null || true",
+    "restart:frontend": "npm run kill:frontend && npm run dev",
+    "restart:backend": "npm run kill:backend && npm run backend:dev",
+    "restart": "npm run kill:frontend && npm run kill:backend && (npm run backend:dev &) && npm run dev"
   },
   "dependencies": {
     "next": "14.2.15",
