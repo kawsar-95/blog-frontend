@@ -1,0 +1,72 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { blogService } from "@/services/blog.service";
+import BlogForm from "@/components/BlogForm";
+import Loader from "@/components/Loader";
+import { useToast } from "@/contexts/ToastContext";
+
+export default function EditBlogPage() {
+  const { id } = useParams();
+  const router = useRouter();
+  const toast = useToast();
+  const [initial, setInitial] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        // blogService.get returns the adapted blog directly.
+        const b = await blogService.get(id);
+        if (!cancelled) setInitial(b);
+      } catch (e) {
+        if (!cancelled) setError(e?.message || "Blog not found");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    if (id) load();
+    return () => { cancelled = true; };
+  }, [id]);
+
+  async function handleSubmit(form) {
+    await blogService.update(id, form);
+    toast.success("Blog updated");
+    router.push("/dashboard/blogs");
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Edit Blog</h1>
+          <p className="text-sm text-slate-600">Update your post and republish.</p>
+        </div>
+        <Link href="/dashboard/blogs" className="btn-secondary">← Back</Link>
+      </div>
+      <div className="card">
+        {loading ? (
+          <Loader label="Loading blog..." />
+        ) : error || !initial ? (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            {error || "Blog not found."}
+          </div>
+        ) : (
+          <BlogForm
+            initial={{
+              blogTitle: initial.blogTitle,
+              category: initial.category,
+              blog: initial.blog,
+            }}
+            onSubmit={handleSubmit}
+            submitLabel="Update Blog"
+          />
+        )}
+      </div>
+    </div>
+  );
+}
