@@ -64,7 +64,7 @@ export default function RegisterPage() {
           <p className="mt-1 text-sm text-slate-600">Join the community and start publishing.</p>
         </div>
 
-        <form onSubmit={handle} className="card space-y-4">
+        <form onSubmit={handle} noValidate className="card space-y-4">
           {serverError && (
             <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
               {serverError}

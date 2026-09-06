@@ -287,10 +287,6 @@ const loginAs = async (page, email, password) => {
     `fields=${hasAll} errors=${errors.length} redirected=${redirected}`);
   await ctx.close();
 }
-    hasAll && errors.length >= 3 && redirected,
-    `fields=${hasAll} errors=${errors.length} redirected=${redirected}`);
-  await ctx.close();
-}
 
 // ============================================================
 // SPEC ITEM 11 — Login: token stored, profile loaded, redirected to dashboard
@@ -837,7 +833,7 @@ const loginAs = async (page, email, password) => {
   // Immediately check if button is disabled or shows spinner
   await page.waitForTimeout(50);
   const disabled = await btn.isDisabled();
-  const spinnerOrText = await page.locator(".animate-spin, text=/Signing/i").count() > 0;
+  const spinnerOrText = await page.locator(".animate-spin").count() > 0 || (await page.getByText(/Signing/).count()) > 0;
   log("32", "Loading state: button shows spinner / is disabled during submit",
     disabled || spinnerOrText, `disabled=${disabled} spinner=${spinnerOrText}`);
   // Wait for navigation

@@ -119,7 +119,8 @@ blog-frontend/
 - Node.js 18.17 or newer (Node 20+ recommended)
 - The Blog REST API running on `http://localhost:5000`
 
-### 2. Install dependencies
+### 2. Installation
+Install dependencies:
 ```bash
 npm install
 ```
