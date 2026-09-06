@@ -263,11 +263,6 @@ npm run lint    # run eslint
 | Change Password | ![Change Password](./screenshots/14-change-password.png) |
 | Admin — Users | ![Admin Users](./screenshots/15-admin-users.png) |
 
-> Screenshots were captured with the frontend running against an offline
-> environment (no backend reachable), which is why blog/user lists show the
-> "Failed to fetch" empty state. With your Blog REST API running on
-> `http://localhost:3000`, real data will populate the same UI.
-
 ---
 
 ## 📝 Submission checklist
