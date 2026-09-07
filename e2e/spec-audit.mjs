@@ -4,7 +4,7 @@
 import { chromium } from "playwright";
 import { writeFileSync, mkdirSync } from "fs";
 
-const FRONT = "http://localhost:3017";
+const FRONT = "http://localhost:3001";
 const API = "http://localhost:3000";
 const OUT = "/tmp/spec-audit";
 mkdirSync(OUT, { recursive: true });

@@ -9,6 +9,8 @@
     "lint": "next lint",
     "audit": "node e2e/audit.mjs",
     "spec-audit": "node e2e/spec-audit.mjs",
+    "regression": "node e2e/regression.mjs",
+    "test:all": "node e2e/spec-audit.mjs && node e2e/regression.mjs",
     "backend:dev": "npm --prefix \"${BACKEND_DIR:-/home/nuruddin-kawsar/Documents/r2sdet/blog-api}\" run dev",
     "backend:start": "npm --prefix \"${BACKEND_DIR:-/home/nuruddin-kawsar/Documents/r2sdet/blog-api}\" start",
     "kill:frontend": "fuser -k 3001/tcp 2>/dev/null || true",
